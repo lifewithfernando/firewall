@@ -1,38 +1,43 @@
-import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
 function PolicyList() {
   const [policies, setPolicies] = useState([]);
 
   useEffect(() => {
-    const config = {
-      headers: { Authorization: `Bearer ${process.env.REACT_APP_API_KEY}` }
+    const fetchPolicies = async () => {
+      try {
+        const response = await axios.get(`${process.env.REACT_APP_FIREWALL_ADDRESS}/api/policies`, {
+          headers: {
+            'Authorization': `Bearer ${process.env.REACT_APP_API_KEY}`
+          }
+        });
+        setPolicies(response.data.policies);
+      } catch (error) {
+        console.log(error);
+      }
     };
-    axios.get('/api/policies', config)
-      .then(response => setPolicies(response.data))
-      .catch(error => console.log(error));
+
+    fetchPolicies();
   }, []);
 
   return (
     <div className="policy-list">
-      {policies.map(policy => (
-        <Policy key={policy.id} policy={policy} />
+      {policies.map((policy, index) => (
+        <Policy key={index} policy={policy} />
       ))}
     </div>
   );
 }
 
-function Policy({ policy }) {
-  const { name, to, from, source, destination, sourceUser, category, application, service, hipProfiles, tags, action, profiles, disabled } = policy;
+function Policy(props) {
+  const { name, to, from, source, destination, sourceUser, category, application, service, hipProfiles, tags, action, profiles, disabled } = props.policy;
 
   return (
     <div className="policy">
       <div className="policy-header">
         <h2>{name}</h2>
-        <div className="policy-controls">
-          <button>Edit</button>
-          <button>Delete</button>
-        </div>
+        <button>Edit</button>
+        <button>Delete</button>
       </div>
       <div className="policy-body">
         <p>To: {to}</p>
@@ -43,11 +48,11 @@ function Policy({ policy }) {
         <p>Category: {category}</p>
         <p>Application: {application}</p>
         <p>Service: {service}</p>
-        <p>HIP Profiles: {hipProfiles.join(', ')}</p>
-        <p>Tags: {tags.join(', ')}</p>
+        <p>HIP Profiles: {hipProfiles}</p>
+        <p>Tags: {tags}</p>
         <p>Action: {action}</p>
-        <p>Profiles: {profiles.join(', ')}</p>
-        <p>Disabled: {disabled ? 'Yes' : 'No'}</p>
+        <p>Profiles: {profiles}</p>
+        <p>Disabled: {disabled}</p>
       </div>
     </div>
   );
